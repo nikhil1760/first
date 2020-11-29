@@ -1,0 +1,66 @@
+- hosts: all
+  tasks:
+          - file: 
+                state: directory
+                path: "/dvd"
+          - mount: 
+                src: "/dev/cdrom"
+                path: "/dvd"
+                state: mounted
+                fstype: "iso9660"
+          - yum_repository: 
+                baseurl: "/dvd/AppStream"
+                name: "dvd1"
+                description: "my yum dvd for package"
+                gpgcheck: no
+
+          - yum_repository: 
+                baseurl: "/dvd/BaseOS"
+                name: "dvd2"
+                description: "my yum dvd for package"
+                gpgcheck: no
+
+          - yum_repository: 
+                baseurl: "https://download.docker.com/linux/centos/7/x86_64/stable"
+                name: "docker"
+                description: "my docker  dvd for package"
+                gpgcheck: no
+          - package:
+                  name: docker-ce-18.09.1-3.el7.x86_64 
+                  state: present
+          - service:
+                  name: docker
+                  state: started
+                  enabled: yes 
+          - package:
+                  name: python3
+                  state: present
+          - pip: 
+                  name: docker
+          - docker_image:
+                  name: httpd
+                  source: pull
+          - file: 
+                state: directory
+                path: "/root/docker"
+          - copy:
+                  dest: /root/docker/docker.html
+                  content: "Hello      if you from docker created by ansible \n " 
+          - docker_container:
+                  name: "Apache"
+                  image: httpd
+                  volumes: /root/docker:/usr/local/apache2/htdocs/
+                  state: started
+                  exposed: 80
+                  ports: "8090:80"
+          - service:
+                  name: firewalld
+                  state: stopped
+
+
+
+
+
+
+
+
